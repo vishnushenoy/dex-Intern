@@ -3,6 +3,7 @@ from __future__ import print_function
 from six.moves import xrange
 from ortools.constraint_solver import pywrapcp
 from ortools.constraint_solver import routing_enums_pb2
+from scipy import spatial
 
 
 class Vehicle:                                # Problem Data Definition
@@ -22,7 +23,7 @@ class CityBlock:
     @property
     def width(self):
         """Gets Block size West to East"""
-        return 228/2
+        return 114
 
     @property
     def height(self):
@@ -66,6 +67,16 @@ class DataProblem:
              1, 2,
              4, 4,
              8, 8]
+        self._supply = \
+            [0,
+             0, 2,
+             0, 0,
+             0, 2,
+             0, 0,
+             4, 1,
+             2, 3,
+             5, 2,
+             0, 1]
 
     @property
     def vehicle(self):
@@ -96,6 +107,11 @@ class DataProblem:
     def demands(self):
         """Gets demands at each location"""
         return self._demands
+
+    @property
+    def supply(self):
+        """Gets demands at each location"""
+        return self._supply
 
 
 def manhattan_distance(position_1, position_2):                 # Problem Constraints
@@ -144,13 +160,12 @@ class CreateDemandEvaluator(object):
 
 def add_capacity_constraints(routing, data, demand_evaluator):
     """Adds capacity constraint"""
-    capacity = "Capacity"
     routing.AddDimension(
         demand_evaluator,
         0,                                              # null capacity slack
         data.vehicle.capacity,                          # vehicle maximum capacity
         True,                                           # start accumulating to zero
-        capacity)
+        "Capacity")
 
 
 class ConsolePrinter:                                   # Print
@@ -193,12 +208,15 @@ class ConsolePrinter:                                   # Print
                     self.data.locations[node_index],
                     self.data.locations[next_node_index])
                 route_load += self.data.demands[node_index]
-                plan_output += ' {0} Load({1}) -> '.format(node_index, route_load)
+                plan_output += ' {0} Loading({1}) -> '.format(node_index, route_load)
+                if self.data.supply[node_index] != 0:
+                    route_load -= self.data.supply[node_index]
+                    plan_output += ' {0} Unloading({1}) -> '.format(node_index, route_load)
                 index = self.assignment.Value(self.routing.NextVar(index))
 
             node_index = self.routing.IndexToNode(index)
             total_dist += route_dist
-            plan_output += ' {0} Load({1})\n'.format(node_index, route_load)
+            plan_output += ' {0} End \n'.format(node_index)
             plan_output += 'Distance of the route: {0}m\n'.format(route_dist)
             plan_output += 'Load of the route: {0}\n'.format(route_load)
             print(plan_output)
@@ -224,7 +242,7 @@ def main():                                         # Main
     # Setting first solution heuristic (cheapest addition).
     search_parameters = pywrapcp.RoutingModel.DefaultSearchParameters()
     search_parameters.first_solution_strategy = (
-        routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
+         routing_enums_pb2.FirstSolutionStrategy.PATH_CHEAPEST_ARC)
     for vehicle_nbr in range(data.num_vehicles):
         start_var = routing.NextVar(routing.Start(vehicle_nbr))
         for node_index in range(routing.Size(), routing.Size()+routing.vehicles()):
