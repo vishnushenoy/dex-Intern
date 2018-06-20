@@ -1,9 +1,10 @@
 """Capacitated Vehicle Routing Problem"""
+
 from __future__ import print_function
 from six.moves import xrange
 from ortools.constraint_solver import pywrapcp
 from ortools.constraint_solver import routing_enums_pb2
-from scipy import spatial
+import kdtree
 
 
 class Vehicle:                                # Problem Data Definition
@@ -251,6 +252,10 @@ def main():                                         # Main
     assignment = routing.SolveWithParameters(search_parameters)
     printer = ConsolePrinter(data, routing, assignment)
     printer.print()
+    root = kdtree.create(data.locations)
+    kdtree.visualize(root)
+    ans = root.search_knn(point=(114, 482), k=3, dist=None)
+    print(ans)
 
 
 if __name__ == '__main__':
