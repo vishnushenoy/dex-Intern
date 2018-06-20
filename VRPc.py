@@ -6,6 +6,11 @@ from ortools.constraint_solver import pywrapcp
 from ortools.constraint_solver import routing_enums_pb2
 import kdtree
 
+def filterNode(i, j, n, root):
+    ans = root.search_knn(point=i, k=n, dist=None)
+    ans2 = root.search_knn(point=j, k=n, dist=None)
+    l = list(set([x[0].data for x in ans2 if x[0].data != i and x[0].data != j]).intersection([y[0].data for y in ans if y[0].data != i and y[0].data != j]))
+    return([i,j,l])
 
 class Vehicle:                                # Problem Data Definition
     """Stores the property of a vehicle"""
@@ -254,9 +259,18 @@ def main():                                         # Main
     printer.print()
     root = kdtree.create(data.locations)
     kdtree.visualize(root)
-    ans = root.search_knn(point=(114, 482), k=3, dist=None)
-    print(ans)
-
+    
+    swap_points = []
+    n = 5 #Number of neighbours
+    c = 0
+    for i in data.locations:
+        for j in data.locations:
+            if(i != j):
+                res = filterNode(i,j,n, root)
+                if(res[2] != []):
+                    swap_points.append(res)
+            c += 1
+    print(swap_points)
 
 if __name__ == '__main__':
     main()
