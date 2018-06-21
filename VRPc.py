@@ -10,15 +10,7 @@ from models import *
 # Problem Data Definition #
 ###########################
 
-<<<<<<< HEAD
 path_route = []
-=======
-def filterNode(i, j, n, root):
-    ans = root.search_knn(point=i, k=n, dist=None)
-    ans2 = root.search_knn(point=j, k=n, dist=None)
-    l = list(set([x[0].data for x in ans2 if x[0].data != i and x[0].data != j]).intersection([y[0].data for y in ans if y[0].data != i and y[0].data != j]))
-    return([i,j,l])
->>>>>>> 02f7e6658bef04dc80eaa0f2c4e32a15fa63cfd8
 
 class Vehicle():
     """Stores the property of a vehicle"""
@@ -373,26 +365,9 @@ def main():
     assignment = routing.SolveWithParameters(search_parameters)
     printer = ConsolePrinter(data, routing, assignment)
     printer.print()
-<<<<<<< HEAD
     for i in range(len(path_route)):
         print(path_route[i].getNode())
 
-=======
-    root = kdtree.create(data.locations)
-    kdtree.visualize(root)
-    
-    swap_points = []
-    n = 5 #Number of neighbours
-    c = 0
-    for i in data.locations:
-        for j in data.locations:
-            if(i != j):
-                res = filterNode(i,j,n, root)
-                if(res[2] != []):
-                    swap_points.append(res)
-            c += 1
-    print(swap_points)
->>>>>>> 02f7e6658bef04dc80eaa0f2c4e32a15fa63cfd8
 
 if __name__ == '__main__':
     main()
