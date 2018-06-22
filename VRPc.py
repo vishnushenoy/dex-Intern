@@ -150,13 +150,18 @@ class DataProblem():
 
 
 def nearest(point,Otherpoints):
+    ansr = [[0 for x in range(len(point))] for y in range(1)]
     points = list(set([point]))+Otherpoints
     print(list(points))
     ManhattanDistance = lambda a, b: sum(abs(a[axis]-b[axis]) for axis in range(len(a)))
     if Otherpoints!=[]:
         root = kdtree.create(points, dimensions=2)
         ans = root.search_knn(point=points[0], k=3, dist=ManhattanDistance)
-        return ans[1][0].data
+        i=0
+        for r in ans:
+          ansr.append(ans[i][0].data)
+          i+=1
+    return ansr
 
 
 def manhattan_distance(position_1, position_2):
@@ -403,7 +408,7 @@ def main():
         # print((list(set(data.locations)-set(l[c])-set([data.locations[data.depot]]))))
         c += 1
     sameTime = []
-    test = 0
+    test = []
     for loclist in l:
         for loc in loclist:
             # print("For location : ", loc)
@@ -412,9 +417,9 @@ def main():
             for key, value in time_dict.items():
                 if(value == loc_time and key != loc):
                     Otherpoints.append(key)
-            test=nearest(loc, Otherpoints)
-            if test!=None:
-                print("t", test)
+            test.append(nearest(loc, Otherpoints)
+            for d in range(len(test)):
+                print("t", test[d])
     # print(time_dict)
 
 
