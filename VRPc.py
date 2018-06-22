@@ -288,7 +288,11 @@ class ConsolePrinter():
         time_dimension = self.routing.GetDimensionOrDie('Time')
         total_dist = 0
         total_time = 0
+        global path_route
+        path_route = [list()]*self.data.num_vehicles
+        # print(path_route)
         for vehicle_id in xrange(self.data.num_vehicles):
+            path_route[vehicle_id] = []
             index = self.routing.Start(vehicle_id)
             plan_output = 'Route for vehicle {0}:\n'.format(vehicle_id)
             route_dist = 0
@@ -304,7 +308,10 @@ class ConsolePrinter():
                 time_max = self.assignment.Max(time_var)
                 route_load += self.data.demands[node_index]
                 swap=swapp(self.data.locations[node_index][0], self.data.locations[node_index][1], time_min)
-                path_route.append(swap)
+                # print("Inputing (%s,%s) to %s" %(self.data.locations[node_index][0],self.data.locations[node_index][1],vehicle_id))
+                path_route[vehicle_id].append(swap)
+                
+                # print("p", path_route)
                 #print(swap.getx(),swap.gety(),swap.gettime())
                 plan_output += ' {0} Loading({1})Time({2} {3}) -> '.format(node_index, route_load, time_min, time_max)
                 if self.data.supply[node_index] != 0 and self.data.supply[node_index] < route_load:
@@ -314,7 +321,9 @@ class ConsolePrinter():
                     route_load = 0
                     plan_output += ' {0} Unloading({1})Time({2} {3}) -> '.format(node_index, route_load, time_min, time_max)
                 index = self.assignment.Value(self.routing.NextVar(index))
-
+            # print("path route element of present vehicle")
+            # for i in path_route[vehicle_id]:
+            #     print(i.getxy())
             node_index = self.routing.IndexToNode(index)
             # load_var = capacity_dimension.CumulVar(index)
             # route_load = self.assignment.Value(load_var)
@@ -325,7 +334,7 @@ class ConsolePrinter():
             total_dist += route_dist
             total_time += route_time
             swap = swapp(self.data.locations[node_index][0], self.data.locations[node_index][1], time_min)
-            path_route.append(swap)
+            path_route[vehicle_id].append(swap)
             #print(swap.getx(), swap.gety(), swap.gettime())
             plan_output += ' {0} Load({1}) Time({2},{3})\n'.format(node_index, route_load, time_min, time_max)
             plan_output += 'Distance of the route: {0} m\n'.format(route_dist)
@@ -365,9 +374,16 @@ def main():
     assignment = routing.SolveWithParameters(search_parameters)
     printer = ConsolePrinter(data, routing, assignment)
     printer.print()
-    for i in range(len(path_route)):
-        print(path_route[i].getNode())
+    # for i in range(len(path_route)):
+    #     print(path_route[i].getNode())
+    
 
+    for x in path_route:
+        for y in x:
+            print(y.getxy())
+        print()
+    # tlist1 = [x.getxy() for x in path_route for y in x]
+    # print(tlist1)
 
 if __name__ == '__main__':
     main()
