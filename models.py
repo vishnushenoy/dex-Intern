@@ -19,6 +19,5 @@ class swapp:
     def getNode(self):
         return [self._x, self._y, self._time]
 
-    # def setxy(self, x, y):
-    #     self._x = x
-    #     self._y = y
+    def getxy(self):
+        return (self._x, self._y)
