@@ -5,6 +5,7 @@ from six.moves import xrange
 from ortools.constraint_solver import pywrapcp
 from ortools.constraint_solver import routing_enums_pb2
 from models import *
+import kdtree
 
 ###########################
 # Problem Data Definition #
@@ -148,6 +149,16 @@ class DataProblem():
 #######################
 
 
+def nearest(point,Otherpoints):
+    points = list(set([point]))+Otherpoints
+    print(list(points))
+    ManhattanDistance = lambda a, b: sum(abs(a[axis]-b[axis]) for axis in range(len(a)))
+    if Otherpoints!=[]:
+        root = kdtree.create(points, dimensions=2)
+        ans = root.search_knn(point=points[0], k=3, dist=ManhattanDistance)
+        return ans[1][0].data
+
+
 def manhattan_distance(position_1, position_2):
     """Computes the Manhattan distance between two points"""
     return (abs(position_1[0] - position_2[0]) +
@@ -288,7 +299,11 @@ class ConsolePrinter():
         time_dimension = self.routing.GetDimensionOrDie('Time')
         total_dist = 0
         total_time = 0
+        global path_route
+        path_route = [list()]*self.data.num_vehicles
+        # print(path_route)
         for vehicle_id in xrange(self.data.num_vehicles):
+            path_route[vehicle_id] = []
             index = self.routing.Start(vehicle_id)
             plan_output = 'Route for vehicle {0}:\n'.format(vehicle_id)
             route_dist = 0
@@ -304,7 +319,10 @@ class ConsolePrinter():
                 time_max = self.assignment.Max(time_var)
                 route_load += self.data.demands[node_index]
                 swap=swapp(self.data.locations[node_index][0], self.data.locations[node_index][1], time_min)
-                path_route.append(swap)
+                # print("Inputing (%s,%s) to %s" %(self.data.locations[node_index][0],self.data.locations[node_index][1],vehicle_id))
+                path_route[vehicle_id].append(swap)
+
+                # print("p", path_route)
                 #print(swap.getx(),swap.gety(),swap.gettime())
                 plan_output += ' {0} Loading({1})Time({2} {3}) -> '.format(node_index, route_load, time_min, time_max)
                 if self.data.supply[node_index] != 0 and self.data.supply[node_index] < route_load:
@@ -314,7 +332,9 @@ class ConsolePrinter():
                     route_load = 0
                     plan_output += ' {0} Unloading({1})Time({2} {3}) -> '.format(node_index, route_load, time_min, time_max)
                 index = self.assignment.Value(self.routing.NextVar(index))
-
+            # print("path route element of present vehicle")
+            # for i in path_route[vehicle_id]:
+            #     print(i.getxy())
             node_index = self.routing.IndexToNode(index)
             # load_var = capacity_dimension.CumulVar(index)
             # route_load = self.assignment.Value(load_var)
@@ -325,7 +345,7 @@ class ConsolePrinter():
             total_dist += route_dist
             total_time += route_time
             swap = swapp(self.data.locations[node_index][0], self.data.locations[node_index][1], time_min)
-            path_route.append(swap)
+            path_route[vehicle_id].append(swap)
             #print(swap.getx(), swap.gety(), swap.gettime())
             plan_output += ' {0} Load({1}) Time({2},{3})\n'.format(node_index, route_load, time_min, time_max)
             plan_output += 'Distance of the route: {0} m\n'.format(route_dist)
@@ -365,8 +385,37 @@ def main():
     assignment = routing.SolveWithParameters(search_parameters)
     printer = ConsolePrinter(data, routing, assignment)
     printer.print()
-    for i in range(len(path_route)):
-        print(path_route[i].getNode())
+    # for i in range(len(path_route)):
+    #     print(path_route[i].getNode())
+
+
+    l = [list()]*data.num_vehicles
+    time_dict = {}
+    c = 0
+    for x in path_route:
+        l[c] = []
+        for y in x:
+            if(y.getxy() != data.locations[data.depot]):
+                l[c].append(y.getxy())
+                time_dict[y.getxy()] = y.gettime()
+        # print("Route : ",l[c])
+        # print("Points not in present list : ")
+        # print((list(set(data.locations)-set(l[c])-set([data.locations[data.depot]]))))
+        c += 1
+    sameTime = []
+    test = 0
+    for loclist in l:
+        for loc in loclist:
+            # print("For location : ", loc)
+            loc_time = time_dict[loc]
+            Otherpoints = []
+            for key, value in time_dict.items():
+                if(value == loc_time and key != loc):
+                    Otherpoints.append(key)
+            test=nearest(loc, Otherpoints)
+            if test!=None:
+                print("t", test)
+    # print(time_dict)
 
 
 if __name__ == '__main__':
