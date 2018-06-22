@@ -378,18 +378,30 @@ def main():
     #     print(path_route[i].getNode())
     
 
-    l = []
+    l = [list()]*data.num_vehicles
+    time_dict = {}
+    c = 0
     for x in path_route:
-        l = []
+        l[c] = []
         for y in x:
             if(y.getxy() != data.locations[data.depot]):
-                l.append(y.getxy())
-        print("Route : ",(l))
+                l[c].append(y.getxy())
+                time_dict[y.getxy()] = y.gettime()
+        print("Route : ",l[c])
         print("Points not in present list : ")
-        print((list(set(data.locations)-set(l)-set([data.locations[data.depot]]))))
-
-    # tlist1 = [x.getxy() for x in path_route for y in x]
-    # print(tlist1)
+        print((list(set(data.locations)-set(l[c])-set([data.locations[data.depot]]))))
+        c += 1
+    sameTime = []
+    for loclist in l:
+        for loc in loclist:
+            print("For location : ", loc)
+            loc_time = time_dict[loc]
+            sameTime = []
+            for key,value in time_dict.items():
+                if(value == loc_time and key != loc):
+                    sameTime.append(key)
+            function(loc, sameTime) #TODO
+    # print(time_dict)
 
 if __name__ == '__main__':
     main()
