@@ -378,10 +378,16 @@ def main():
     #     print(path_route[i].getNode())
     
 
+    l = []
     for x in path_route:
+        l = []
         for y in x:
-            print(y.getxy())
-        print()
+            if(y.getxy() != data.locations[data.depot]):
+                l.append(y.getxy())
+        print("Route : ",(l))
+        print("Points not in present list : ")
+        print((list(set(data.locations)-set(l)-set([data.locations[data.depot]]))))
+
     # tlist1 = [x.getxy() for x in path_route for y in x]
     # print(tlist1)
 
