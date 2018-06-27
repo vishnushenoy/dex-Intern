@@ -24,22 +24,25 @@ class swapp:
 
 
 class package:
-    def __init__(self, demand_loc, supply_loc, package_id):
-        self._demand_loc = demand_loc
-        self._supply_loc = supply_loc
+    def __init__(self, demand_loc_index, supply_loc_index, package_id):
+        self._demand_loc_index = demand_loc_index
+        self._supply_loc_index = supply_loc_index
         self._package_id = package_id
 
-    def getdemandloc(self):
-        return self._demand_loc
+    def getdemandlocindex(self):
+        return self._demand_loc_index
 
-    def getsupplyloc(self):
-        return self._supply_loc
+    def getsupplylocindex(self):
+        return self._supply_loc_index
 
     def getpackageid(self):
         return self._package_id
 
     def getpackagedetails(self):
-        return [self._supply_loc, self._demand_loc, self._package_id]
+        return [self._demand_loc_index, self._supply_loc_index, self._package_id]
 
     def getsupplyanddemand(self):
-        return [self._supply_loc, self._demand_loc]
+        return [self._demand_loc_index, self._supply_loc_index]
+
+    def setdestination(self, destination):
+        self._supply_loc_index = destination
