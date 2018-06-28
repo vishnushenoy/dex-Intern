@@ -11,7 +11,7 @@ import kdtree
 ###########################
 
 path_route = []
-
+cost = []
 
 class Vehicle():
     """Stores the property of a vehicle"""
@@ -483,15 +483,16 @@ def main():
             sameTime.append(nearest(loc, Otherpoints))
             print(loc, sameTime)
     k = 0
-
+    global cost
     for vehicle_nbr in range(data.num_vehicles):
-        cost = []
+        l = []
         for i in range(1, len(path_route[vehicle_nbr]) - 1):
             if (sameTime[k] != None):
-                cost.append(cost_fn_distance(vehicle_nbr, sameTime, i, k))
+                l.append(cost_fn_distance(vehicle_nbr, sameTime, i, k))
             k += 1
         print(vehicle_nbr)
-        print(cost)
+        cost.append(l)
+    print(cost)
 
     # for d in range(len(sameTime)):
     #     if sameTime[d] is not None:
