@@ -12,8 +12,10 @@ import kdtree
 
 path_route = []
 
+
 class Vehicle():
     """Stores the property of a vehicle"""
+
     def __init__(self):
         """Initializes the vehicle properties"""
         self._capacity = 15
@@ -33,6 +35,7 @@ class Vehicle():
 
 class CityBlock():
     """City block definition"""
+
     @property
     def width(self):
         """Gets Block size West to East"""
@@ -46,6 +49,7 @@ class CityBlock():
 
 class DataProblem():
     """Stores the data for the problem"""
+
     def __init__(self):
         """Initializes the data for the problem"""
         self._vehicle = Vehicle()
@@ -53,25 +57,25 @@ class DataProblem():
 
         # Locations in block unit
         locations = \
-                [(4, 4), # depot
-                 (2, 0), (8, 0), # row 0
-                 (0, 1), (1, 1),
-                 (5, 2), (7, 2),
-                 (3, 3), (6, 3),
-                 (5, 5), (8, 5),
-                 (1, 6), (2, 6),
-                 (3, 7), (6, 7),
-                 (0, 8), (7, 8)]
+            [(4, 4),  # depot
+             (2, 0), (8, 0),  # row 0
+             (0, 1), (1, 1),
+             (5, 2), (7, 2),
+             (3, 3), (6, 3),
+             (5, 5), (8, 5),
+             (1, 6), (2, 6),
+             (3, 7), (6, 7),
+             (0, 8), (7, 8)]
         # locations in meters using the city block dimension
         city_block = CityBlock()
         self._locations = [(
-            loc[0]*city_block.width,
-            loc[1]*city_block.height) for loc in locations]
+            loc[0] * city_block.width,
+            loc[1] * city_block.height) for loc in locations]
 
         self._depot = 0
 
         self._demands = \
-            [0,     # depot
+            [0,  # depot
              1, 1,  # 1, 2
              2, 4,  # 3, 4
              2, 4,  # 5, 6
@@ -82,7 +86,7 @@ class DataProblem():
              8, 8]  # 15, 16
 
         self._supply = \
-            [0,     # depot
+            [0,  # depot
              0, 2,  # 1,2
              0, 0,  # 3,4
              0, 2,  # 5,6
@@ -149,6 +153,8 @@ class DataProblem():
     @property
     def total_demand(self):
         return sum([x for x in self._demands])
+
+
 #######################
 # Problem Constraints #
 #######################
@@ -163,7 +169,8 @@ def cost_fn_distance(vehicle_nbr, neighbour, path_route_index, neighbour_index):
     # print(len(neighbour[neighbour_index]))
     cost = []
     for i in range(len(neighbour[neighbour_index])):
-        cost.append(manhattan_distance(path_route[vehicle_nbr][path_route_index].getxy(), neighbour[neighbour_index][i]))
+        cost.append(
+            manhattan_distance(path_route[vehicle_nbr][path_route_index].getxy(), neighbour[neighbour_index][i]))
     return cost
 
 
@@ -171,15 +178,15 @@ def nearest(point, Otherpoints):
     ansr = []
     # print(ansr)
     # input()
-    points = list(set([point]))+Otherpoints
-    ManhattanDistance = lambda a, b: sum(abs(a[axis]-b[axis]) for axis in range(len(a)))
-    if Otherpoints!=[]:
+    points = list(set([point])) + Otherpoints
+    ManhattanDistance = lambda a, b: sum(abs(a[axis] - b[axis]) for axis in range(len(a)))
+    if Otherpoints != []:
         root = kdtree.create(points, dimensions=2)
         ans = root.search_knn(point=points[0], k=3, dist=ManhattanDistance)
-        i=0
+        i = 0
         for r in ans:
-          ansr.append(ans[i][0].data)
-          i+=1
+            ansr.append(ans[i][0].data)
+            i += 1
         return ansr[1:]
 
 
@@ -191,6 +198,7 @@ def manhattan_distance(position_1, position_2):
 
 class CreateDistanceEvaluator(object):
     """Creates callback to return distance between points."""
+
     def __init__(self, data):
         """Initializes the distance matrix."""
         self._distances = {}
@@ -215,6 +223,7 @@ class CreateDistanceEvaluator(object):
 
 class CreateDemandEvaluator(object):
     """Creates callback to get demands at each location."""
+
     def __init__(self, data):
         """Initializes the demand array."""
         self._demands = data.demands
@@ -223,6 +232,7 @@ class CreateDemandEvaluator(object):
         """Returns the demand of the current node"""
         del to_node
         return self._demands[from_node]
+
 
 # class CreateSupplyEvaluator(object):
 #     """Creates callback to get demands at each location."""
@@ -241,9 +251,9 @@ def add_capacity_constraints(routing, data, demand_evaluator):
     capacity = "Capacity"
     routing.AddDimension(
         demand_evaluator,
-        0, # null capacity slack
-        data.vehicle.capacity, # vehicle maximum capacity
-        True, # start cumul to zero
+        0,  # null capacity slack
+        data.vehicle.capacity,  # vehicle maximum capacity
+        True,  # start cumul to zero
         capacity)
 
 
@@ -284,9 +294,9 @@ def add_time_window_constraints(routing, data, time_evaluator):
     horizon = 120
     routing.AddDimension(
         time_evaluator,
-        horizon, # allow waiting time
-        horizon, # maximum time per vehicle
-        False, # don't force start cumul to zero since we are giving TW to start nodes
+        horizon,  # allow waiting time
+        horizon,  # maximum time per vehicle
+        False,  # don't force start cumul to zero since we are giving TW to start nodes
         time)
     time_dimension = routing.GetDimensionOrDie(time)
     for location_idx, time_window in enumerate(data.time_windows):
@@ -300,6 +310,7 @@ def add_time_window_constraints(routing, data, time_evaluator):
         time_dimension.CumulVar(index).SetRange(data.time_windows[0][0], data.time_windows[0][1])
         # routing.AddToAssignment(time_dimension.SlackVar(index))
 
+
 ###########
 # Printer #
 ###########
@@ -307,6 +318,7 @@ def add_time_window_constraints(routing, data, time_evaluator):
 
 class ConsolePrinter():
     """Print solution to console"""
+
     def __init__(self, data, routing, assignment):
         """Initializes the printer"""
         self._data = data
@@ -332,12 +344,12 @@ class ConsolePrinter():
         """Prints assignment on console"""
         # Inspect solution.
         # capacity_dimension = self.routing.GetDimensionOrDie('Capacity')
-        pack = [0]*self.data.total_demand
+        pack = [0] * self.data.total_demand
         time_dimension = self.routing.GetDimensionOrDie('Time')
         total_dist = 0
         total_time = 0
         global path_route
-        path_route = [list()]*self.data.num_vehicles
+        path_route = [list()] * self.data.num_vehicles
         # print(path_route)
         for vehicle_id in xrange(self.data.num_vehicles):
             path_route[vehicle_id] = []
@@ -353,7 +365,7 @@ class ConsolePrinter():
                     pack[id] = package(ind, 0, id)
                     id += 1
             # for i in pack:
-                # print(i.getpackageid(), i.getdemandlocindex())
+            # print(i.getpackageid(), i.getdemandlocindex())
             previous_node_index = 0
             while not self.routing.IsEnd(index):
                 node_index = self.routing.IndexToNode(index)
@@ -374,9 +386,10 @@ class ConsolePrinter():
                 plan_output += ' {0} Loading({1})Time({2} {3}) -> '.format(node_index, route_load, time_min, time_max)
                 if self.data.supply[node_index] != 0 and self.data.supply[node_index] < route_load:
                     route_load -= self.data.supply[node_index]
-                    plan_output += ' {0} Unloading({1})Time({2} {3}) -> '.format(node_index, route_load, time_min, time_max)
+                    plan_output += ' {0} Unloading({1})Time({2} {3}) -> '.format(node_index, route_load, time_min,
+                                                                                 time_max)
                     for ind, i in enumerate(pack):
-                        if(i.getdemandlocindex() == previous_node_index):
+                        if (i.getdemandlocindex() == previous_node_index):
                             id = ind
                             # while (i.getsupplylocindex() != 0):
                             #     id += 1
@@ -384,7 +397,8 @@ class ConsolePrinter():
                         # print(i.getpackagedetails())
                 elif self.data.supply[node_index] > route_load:
                     route_load = 0
-                    plan_output += ' {0} Unloading({1})Time({2} {3}) -> '.format(node_index, route_load, time_min, time_max)
+                    plan_output += ' {0} Unloading({1})Time({2} {3}) -> '.format(node_index, route_load, time_min,
+                                                                                 time_max)
                 index = self.assignment.Value(self.routing.NextVar(index))
                 previous_node_index = node_index
             # print("path route element of present vehicle")
@@ -410,6 +424,7 @@ class ConsolePrinter():
             print(plan_output)
         print('Total Distance of all routes: {0} m'.format(total_dist))
         print('Total Time of all routes: {0} min'.format(total_time))
+
 
 ########
 # Main #
@@ -443,14 +458,13 @@ def main():
     # for i in range(len(path_route)):
     #     print(path_route[i].getNode())
 
-
-    l = [list()]*data.num_vehicles
+    l = [list()] * data.num_vehicles
     time_dict = {}
     c = 0
     for x in path_route:
         l[c] = []
         for y in x:
-            if(y.getxy() != data.locations[data.depot]):
+            if (y.getxy() != data.locations[data.depot]):
                 l[c].append(y.getxy())
                 time_dict[y.getxy()] = y.gettime()
         # print("Route : ",l[c])
@@ -464,18 +478,20 @@ def main():
             loc_time = time_dict[loc]
             Otherpoints = []
             for key, value in time_dict.items():
-                if(value == loc_time and key != loc):
+                if (value == loc_time and key != loc):
                     Otherpoints.append(key)
             sameTime.append(nearest(loc, Otherpoints))
             print(loc, sameTime)
     k = 0
-    cost = []
+
     for vehicle_nbr in range(data.num_vehicles):
-        for i in range(1,len(path_route[vehicle_nbr])-1):
-            if(sameTime[k]!=None):
-                cost = list.copy(cost_fn_distance(vehicle_nbr, sameTime, i, k))
-                print(cost)
+        cost = []
+        for i in range(1, len(path_route[vehicle_nbr]) - 1):
+            if (sameTime[k] != None):
+                cost.append(cost_fn_distance(vehicle_nbr, sameTime, i, k))
             k += 1
+        print(vehicle_nbr)
+        print(cost)
 
     # for d in range(len(sameTime)):
     #     if sameTime[d] is not None:
@@ -484,6 +500,7 @@ def main():
 
     # print(path_route[0][1].getNode())
     # print(path_route[0][-2].getNode())
+
 
 if __name__ == '__main__':
     main()
