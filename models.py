@@ -39,7 +39,7 @@ class package:
         return self._package_id
 
     def getpackagedetails(self):
-        return [self._demand_loc_index, self._supply_loc_index, self._package_id]
+        return [self._package_id, self._demand_loc_index, self._supply_loc_index]
 
     def getsupplyanddemand(self):
         return [self._demand_loc_index, self._supply_loc_index]
