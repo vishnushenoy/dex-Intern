@@ -9,13 +9,12 @@ import kdtree
 ###########################
 # Problem Data Definition #
 ###########################
-
 path_route = []
 cost = []
 
-class Vehicle():
-    """Stores the property of a vehicle"""
 
+class Vehicle:
+    """Stores the property of a vehicle"""
     def __init__(self):
         """Initializes the vehicle properties"""
         self._capacity = 15
@@ -33,9 +32,8 @@ class Vehicle():
         return self._speed
 
 
-class CityBlock():
+class CityBlock:
     """City block definition"""
-
     @property
     def width(self):
         """Gets Block size West to East"""
@@ -47,9 +45,8 @@ class CityBlock():
         return 80
 
 
-class DataProblem():
+class DataProblem:
     """Stores the data for the problem"""
-
     def __init__(self):
         """Initializes the data for the problem"""
         self._vehicle = Vehicle()
@@ -57,20 +54,20 @@ class DataProblem():
 
         # Locations in block unit
         locations = \
-            [(4, 4),  # depot
-             (2, 0), (8, 0),  # row 0
-             (0, 1), (1, 1),
-             (5, 2), (7, 2),
-             (3, 3), (6, 3),
-             (5, 5), (8, 5),
-             (1, 6), (2, 6),
-             (3, 7), (6, 7),
-             (0, 8), (7, 8)]
+                [(4, 4), # depot
+                 (2, 0), (8, 0),    # 1,2
+                 (0, 1), (1, 1),    # 3,4
+                 (5, 2), (7, 2),    # 5,6
+                 (3, 3), (6, 3),    # 7,8
+                 (5, 5), (8, 5),    # 9,10
+                 (1, 6), (2, 6),    # 11,12
+                 (3, 7), (6, 7),    # 13,14
+                 (0, 8), (7, 8)]    # 15,16
         # locations in meters using the city block dimension
         city_block = CityBlock()
         self._locations = [(
-            loc[0] * city_block.width,
-            loc[1] * city_block.height) for loc in locations]
+            loc[0]*city_block.width,
+            loc[1]*city_block.height) for loc in locations]
 
         self._depot = 0
 
@@ -87,17 +84,46 @@ class DataProblem():
 
         self._supply = \
             [0,  # depot
-             0, 2,  # 1,2
-             0, 0,  # 3,4
-             0, 2,  # 5,6
-             0, 0,  # 7,8
-             0, 1,  # 9,10
-             2, 0,  # 11,12
-             5, 2,  # 13,14
-             0, 1]  # 15,16
+             6, 2,  # 1,2
+             6, 8,  # 3,4
+             0, 8,  # 5,6
+             0, 3,  # 7,8
+             0, 8,  # 9,10
+             3, 0,  # 11,12
+             5, 0,  # 13,14
+             0, 3]  # 15,16
 
-        # self._destinationLocationIndex=\
-        #     [0,
+        self._destinationLocationIndex=\
+            [0, 0,
+             11, 11,
+             1, 1,
+             1, 1,
+             8, 8,
+             0, 0,
+             0, 0,
+             13, 13,
+             13, 13,
+             13, 3,
+             3, 3,
+             6, 6,
+             6, 6,
+             6, 6,
+             6, 6,
+             8, 2,
+             0, 0,
+             4, 4,
+             3, 3,
+             3, 11,
+             16, 16,
+             16, 10,
+             4, 4,
+             4, 4,
+             4, 4,
+             1, 1,
+             10, 10,
+             10, 10,
+             10, 10,
+             10, 2]
 
         self._time_windows = \
             [(0, 0),
@@ -146,6 +172,10 @@ class DataProblem():
         return self._supply
 
     @property
+    def destinationIndex(self):
+        return self._destinationLocationIndex
+
+    @property
     def time_windows(self):
         """Gets (start time, end time) for each locations"""
         return self._time_windows
@@ -154,14 +184,16 @@ class DataProblem():
     def total_demand(self):
         return sum([x for x in self._demands])
 
-
 #######################
 # Problem Constraints #
 #######################
+
+
 def swap_decider(vehicle_nbr):
-    print(path_route[vehicle_nbr])
-    '''TODO'''
-    return
+    for i in range(len(path_route[vehicle_nbr])):
+        print((path_route[vehicle_nbr][i].getxy()[0])/114,(path_route[vehicle_nbr][i].getxy()[1])/80)
+
+    # return
 
 
 def cost_fn_distance(vehicle_nbr, neighbour, path_route_index, neighbour_index):
@@ -178,15 +210,15 @@ def nearest(point, Otherpoints):
     ansr = []
     # print(ansr)
     # input()
-    points = list(set([point])) + Otherpoints
-    ManhattanDistance = lambda a, b: sum(abs(a[axis] - b[axis]) for axis in range(len(a)))
-    if Otherpoints != []:
+    points = list(set([point]))+Otherpoints
+    ManhattanDistance = lambda a, b: sum(abs(a[axis]-b[axis]) for axis in range(len(a)))
+    if Otherpoints!=[]:
         root = kdtree.create(points, dimensions=2)
         ans = root.search_knn(point=points[0], k=3, dist=ManhattanDistance)
         i = 0
         for r in ans:
-            ansr.append(ans[i][0].data)
-            i += 1
+          ansr.append(ans[i][0].data)
+          i += 1
         return ansr[1:]
 
 
@@ -198,12 +230,9 @@ def manhattan_distance(position_1, position_2):
 
 class CreateDistanceEvaluator(object):
     """Creates callback to return distance between points."""
-
     def __init__(self, data):
         """Initializes the distance matrix."""
         self._distances = {}
-        depot = 0
-
         # precompute distance between location to have distance callback in O(1)
         for from_node in xrange(data.num_locations):
             self._distances[from_node] = {}
@@ -223,7 +252,6 @@ class CreateDistanceEvaluator(object):
 
 class CreateDemandEvaluator(object):
     """Creates callback to get demands at each location."""
-
     def __init__(self, data):
         """Initializes the demand array."""
         self._demands = data.demands
@@ -234,16 +262,16 @@ class CreateDemandEvaluator(object):
         return self._demands[from_node]
 
 
-# class CreateSupplyEvaluator(object):
-#     """Creates callback to get demands at each location."""
-#     def __init__(self, data):
-#         """Initializes the demand array."""
-#         self._supply = data.supply
-#
-#     def supply_evaluator(self, from_node, to_node):
-#         """Returns the demand of the current node"""
-#         del from_node
-#         return self._supply[from_node]
+class CreateSupplyEvaluator(object):
+    """Creates callback to get demands at each location."""
+    def __init__(self, data):
+        """Initializes the demand array."""
+        self._supply = data.supply
+
+    def supply_evaluator(self, from_node, to_node):
+        """Returns the demand of the current node"""
+        del from_node
+        return self._supply[from_node]
 
 
 def add_capacity_constraints(routing, data, demand_evaluator):
@@ -310,7 +338,6 @@ def add_time_window_constraints(routing, data, time_evaluator):
         time_dimension.CumulVar(index).SetRange(data.time_windows[0][0], data.time_windows[0][1])
         # routing.AddToAssignment(time_dimension.SlackVar(index))
 
-
 ###########
 # Printer #
 ###########
@@ -318,7 +345,6 @@ def add_time_window_constraints(routing, data, time_evaluator):
 
 class ConsolePrinter():
     """Print solution to console"""
-
     def __init__(self, data, routing, assignment):
         """Initializes the printer"""
         self._data = data
@@ -344,12 +370,12 @@ class ConsolePrinter():
         """Prints assignment on console"""
         # Inspect solution.
         # capacity_dimension = self.routing.GetDimensionOrDie('Capacity')
-        pack = [0] * self.data.total_demand
+        pack = [0]*self.data.total_demand
         time_dimension = self.routing.GetDimensionOrDie('Time')
         total_dist = 0
         total_time = 0
         global path_route
-        path_route = [list()] * self.data.num_vehicles
+        path_route = [list()]*self.data.num_vehicles
         # print(path_route)
         for vehicle_id in xrange(self.data.num_vehicles):
             path_route[vehicle_id] = []
@@ -358,14 +384,13 @@ class ConsolePrinter():
             route_dist = 0
             route_load = 0
             id = 0
-            print("he")
             for ind, pickup in enumerate(self.data.demands):
-                # print(pickup, ind)
+                # print(len(self.data.destinationIndex),self.data.destinationIndex[0])
                 for i in range(pickup):
-                    pack[id] = package(ind, 0, id)
+                    pack[id] = package(ind, self.data.destinationIndex[id], id)
                     id += 1
-            # for i in pack:
-            # print(i.getpackageid(), i.getdemandlocindex())
+            for i in pack:
+                print(i.getpackagedetails())
             previous_node_index = 0
             while not self.routing.IsEnd(index):
                 node_index = self.routing.IndexToNode(index)
@@ -386,19 +411,18 @@ class ConsolePrinter():
                 plan_output += ' {0} Loading({1})Time({2} {3}) -> '.format(node_index, route_load, time_min, time_max)
                 if self.data.supply[node_index] != 0 and self.data.supply[node_index] < route_load:
                     route_load -= self.data.supply[node_index]
-                    plan_output += ' {0} Unloading({1})Time({2} {3}) -> '.format(node_index, route_load, time_min,
-                                                                                 time_max)
-                    for ind, i in enumerate(pack):
-                        if (i.getdemandlocindex() == previous_node_index):
-                            id = ind
-                            # while (i.getsupplylocindex() != 0):
-                            #     id += 1
-                            pack[id].setdestination(node_index)
-                        # print(i.getpackagedetails())
+                    plan_output += ' {0} Unloading({1})Time({2} {3}) -> '.format(node_index, route_load, time_min, time_max)
+                    # for ind, i in enumerate(pack):
+                    #     if(i.getdemandlocindex() == previous_node_index):
+                    #         id = ind
+                    #         while (i.getsupplylocindex() == 0):
+                    #             for j in range(self.data.supply[node_index]):
+                    #                 pack[id].setdestination(node_index)
+                    #         id += 1
+                    #     # print(i.getpackagedetails())
                 elif self.data.supply[node_index] > route_load:
                     route_load = 0
-                    plan_output += ' {0} Unloading({1})Time({2} {3}) -> '.format(node_index, route_load, time_min,
-                                                                                 time_max)
+                    plan_output += ' {0} Unloading({1})Time({2} {3}) -> '.format(node_index, route_load, time_min, time_max)
                 index = self.assignment.Value(self.routing.NextVar(index))
                 previous_node_index = node_index
             # print("path route element of present vehicle")
@@ -417,6 +441,7 @@ class ConsolePrinter():
             path_route[vehicle_id].append(swap)
             # destination = getdestination(path_route[vehicle_id][-2])
             # print(swap.getx(), swap.gety(), swap.gettime())
+            # swap_decider(0)
             plan_output += ' {0} Unloading({1}) Time({2},{3})\n'.format(node_index, route_load, time_min, time_max)
             plan_output += 'Distance of the route: {0} m\n'.format(route_dist)
             plan_output += 'Load of the route: {0}\n'.format(route_load)
@@ -424,7 +449,6 @@ class ConsolePrinter():
             print(plan_output)
         print('Total Distance of all routes: {0} m'.format(total_dist))
         print('Total Time of all routes: {0} min'.format(total_time))
-
 
 ########
 # Main #
@@ -442,9 +466,9 @@ def main():
     routing.SetArcCostEvaluatorOfAllVehicles(distance_evaluator)
     # Add Capacity constraint
     demand_evaluator = CreateDemandEvaluator(data).demand_evaluator
-    # supply_evaluator = CreateSupplyEvaluator(data).supply_evaluator
+    supply_evaluator = CreateSupplyEvaluator(data).supply_evaluator
     add_capacity_constraints(routing, data, demand_evaluator)
-    # add_capacity_constraints(routing, data, supply_evaluator)
+    add_capacity_constraints(routing, data, supply_evaluator)
     # Add Time Window constraint
     time_evaluator = CreateTimeEvaluator(data).time_evaluator
     add_time_window_constraints(routing, data, time_evaluator)
@@ -457,14 +481,13 @@ def main():
     printer.print()
     # for i in range(len(path_route)):
     #     print(path_route[i].getNode())
-
-    l = [list()] * data.num_vehicles
+    l = [list()]*data.num_vehicles
     time_dict = {}
     c = 0
     for x in path_route:
         l[c] = []
         for y in x:
-            if (y.getxy() != data.locations[data.depot]):
+            if(y.getxy() != data.locations[data.depot]):
                 l[c].append(y.getxy())
                 time_dict[y.getxy()] = y.gettime()
         # print("Route : ",l[c])
@@ -478,10 +501,10 @@ def main():
             loc_time = time_dict[loc]
             Otherpoints = []
             for key, value in time_dict.items():
-                if (value == loc_time and key != loc):
+                if(value == loc_time and key != loc):
                     Otherpoints.append(key)
             sameTime.append(nearest(loc, Otherpoints))
-            print(loc, sameTime)
+            # print(loc, sameTime)
     k = 0
     global cost
     for vehicle_nbr in range(data.num_vehicles):
@@ -493,6 +516,10 @@ def main():
         print(vehicle_nbr)
         cost.append(l)
     print(cost)
+
+    for i in range(data.num_vehicles):
+        swap_decider(i)
+        print("  ")
 
     # for d in range(len(sameTime)):
     #     if sameTime[d] is not None:
