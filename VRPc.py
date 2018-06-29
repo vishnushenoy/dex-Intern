@@ -11,6 +11,7 @@ import kdtree
 ###########################
 path_route = []
 cost = []
+pack = []
 
 
 class Vehicle:
@@ -94,36 +95,26 @@ class DataProblem:
              0, 3]  # 15,16
 
         self._destinationLocationIndex=\
-            [0, 0,
-             11, 11,
-             1, 1,
-             1, 1,
-             8, 8,
-             0, 0,
-             0, 0,
-             13, 13,
-             13, 13,
-             13, 3,
-             3, 3,
-             6, 6,
-             6, 6,
-             6, 6,
-             6, 6,
-             8, 2,
-             0, 0,
-             4, 4,
-             3, 3,
-             3, 11,
-             16, 16,
-             16, 10,
-             4, 4,
-             4, 4,
-             4, 4,
-             1, 1,
-             10, 10,
-             10, 10,
-             10, 10,
-             10, 2]
+            [0, 0, 11,
+             11, 1, 1,
+             1, 1, 8,
+             8, 0, 0,
+             0, 0, 13,
+             13, 13, 13,
+             13, 3, 3,
+             3, 6, 6,
+             6, 6, 6,
+             6, 6, 6,
+             8, 2, 0,
+             0, 4, 4,
+             3, 3, 3,
+             11, 16, 16,
+             16, 10, 4,
+             4, 4, 4,
+             4, 4, 1,
+             1, 10, 10,
+             10, 10, 10,
+             10, 10, 2]
 
         self._time_windows = \
             [(0, 0),
@@ -189,12 +180,40 @@ class DataProblem:
 #######################
 
 
-def swap_decider(vehicle_nbr):
-    for i in range(len(path_route[vehicle_nbr])):
-        print((path_route[vehicle_nbr][i].getxy()[0])/114,(path_route[vehicle_nbr][i].getxy()[1])/80)
+def loc_node_to_index(node):
+    data = DataProblem()
+    return data.locations.index(node)
 
-    # return
 
+def index_to_loc_node(index):
+    data=DataProblem()
+    return data.locations[index]
+
+
+def find_path(node):
+    data=DataProblem()
+    for vehicle_nbr in range(data.num_vehicles):
+        for i in range(len(path_route[vehicle_nbr])):
+            if node == path_route[vehicle_nbr][i].getxy():
+                return vehicle_nbr
+
+
+def swap_decider(vehicle_nbr, neighbour , neighbour_index):
+    # l = []
+    data = DataProblem()
+    global cost
+    #######################TODO########################################################
+    # for i in range(len(path_route[vehicle_nbr])):
+    #     # print(data.locations.index((path_route[vehicle_nbr][i].getxy()[0], path_route[vehicle_nbr][i].getxy()[1])))
+    #     # print(path_route[vehicle_nbr][i].getxy(),neighbour[neighbour_index])
+    #     print("l",len(neighbour[neighbour_index]))
+    #     for j in range(len(neighbour[neighbour_index])):
+    #         vehicle_id = find_path(neighbour[neighbour_index][j])
+    #         print(path_route[vehicle_id])
+    path_route[vehicle_nbr]
+    neighbour_vehi=[]
+    for i in range(len(neighbour[neighbour_index])):
+        neighbour_vehi.append(find_path(neighbour[neighbour_index]))
 
 def cost_fn_distance(vehicle_nbr, neighbour, path_route_index, neighbour_index):
     # print(type(path_route[vehicle_nbr][path_route_index].getxy()),type(neighbour[neighbour_index]))
@@ -203,6 +222,7 @@ def cost_fn_distance(vehicle_nbr, neighbour, path_route_index, neighbour_index):
     for i in range(len(neighbour[neighbour_index])):
         cost.append(
             manhattan_distance(path_route[vehicle_nbr][path_route_index].getxy(), neighbour[neighbour_index][i]))
+    # print(cost)
     return cost
 
 
@@ -370,6 +390,7 @@ class ConsolePrinter():
         """Prints assignment on console"""
         # Inspect solution.
         # capacity_dimension = self.routing.GetDimensionOrDie('Capacity')
+        global pack
         pack = [0]*self.data.total_demand
         time_dimension = self.routing.GetDimensionOrDie('Time')
         total_dist = 0
@@ -383,14 +404,15 @@ class ConsolePrinter():
             plan_output = 'Route for vehicle {0}:\n'.format(vehicle_id)
             route_dist = 0
             route_load = 0
+            total_load = 0
             id = 0
             for ind, pickup in enumerate(self.data.demands):
                 # print(len(self.data.destinationIndex),self.data.destinationIndex[0])
                 for i in range(pickup):
                     pack[id] = package(ind, self.data.destinationIndex[id], id)
                     id += 1
-            for i in pack:
-                print(i.getpackagedetails())
+            # for i in pack:
+            #     print(i.getpackagedetails())
             previous_node_index = 0
             while not self.routing.IsEnd(index):
                 node_index = self.routing.IndexToNode(index)
@@ -403,6 +425,7 @@ class ConsolePrinter():
                 time_min = self.assignment.Min(time_var)
                 time_max = self.assignment.Max(time_var)
                 route_load += self.data.demands[node_index]
+                total_load += self.data.demands[node_index]
                 swap = swapp(self.data.locations[node_index][0], self.data.locations[node_index][1], time_min)
                 # print("Inputing (%s,%s) to %s" %(self.data.locations[node_index][0],self.data.locations[node_index][1],vehicle_id))
                 path_route[vehicle_id].append(swap)
@@ -439,12 +462,11 @@ class ConsolePrinter():
             total_time += route_time
             swap = swapp(self.data.locations[node_index][0], self.data.locations[node_index][1], time_min)
             path_route[vehicle_id].append(swap)
-            # destination = getdestination(path_route[vehicle_id][-2])
+            # destination = setdestination(path_route[vehicle_id][-2])
             # print(swap.getx(), swap.gety(), swap.gettime())
-            # swap_decider(0)
             plan_output += ' {0} Unloading({1}) Time({2},{3})\n'.format(node_index, route_load, time_min, time_max)
             plan_output += 'Distance of the route: {0} m\n'.format(route_dist)
-            plan_output += 'Load of the route: {0}\n'.format(route_load)
+            plan_output += 'Load of the route: {0}\n'.format(total_load)
             plan_output += 'Time of the route: {0} min\n'.format(route_time)
             print(plan_output)
         print('Total Distance of all routes: {0} m'.format(total_dist))
@@ -512,14 +534,15 @@ def main():
         for i in range(1, len(path_route[vehicle_nbr]) - 1):
             if (sameTime[k] != None):
                 l.append(cost_fn_distance(vehicle_nbr, sameTime, i, k))
+                swap_decider(vehicle_nbr, sameTime,k)
             k += 1
-        print(vehicle_nbr)
+        # print(vehicle_nbr)
         cost.append(l)
     print(cost)
 
-    for i in range(data.num_vehicles):
-        swap_decider(i)
-        print("  ")
+    # for i in range(data.num_vehicles):
+    #     swap_decider(i)
+    #     print("  ")
 
     # for d in range(len(sameTime)):
     #     if sameTime[d] is not None:
@@ -528,6 +551,11 @@ def main():
 
     # print(path_route[0][1].getNode())
     # print(path_route[0][-2].getNode())
+    # print(pack[0].getpackagedetails())
+    # node=(342,240)
+    # vehicle_id= find_path(node)
+    # for i in range(len(path_route[vehicle_id])):
+    #     print(path_route[vehicle_id][i].getxy())
 
 
 if __name__ == '__main__':
