@@ -200,6 +200,8 @@ def find_path(node):
 
 def swap_decider(vehicle_nbr, neighbour , neighbour_index):
     # l = []
+    dec = {}
+    neighbour_ind = []
     data = DataProblem()
     global cost
     #######################TODO########################################################
@@ -210,10 +212,24 @@ def swap_decider(vehicle_nbr, neighbour , neighbour_index):
     #     for j in range(len(neighbour[neighbour_index])):
     #         vehicle_id = find_path(neighbour[neighbour_index][j])
     #         print(path_route[vehicle_id])
-    path_route[vehicle_nbr]
-    neighbour_vehi=[]
     for i in range(len(neighbour[neighbour_index])):
-        neighbour_vehi.append(find_path(neighbour[neighbour_index]))
+        neighbour_vehi=find_path(neighbour[neighbour_index][i])
+    # print(neighbour[neighbour_index][0])
+    # node=(456,320)
+    for i in range(len(path_route[neighbour_vehi])):
+      neighbour_ind.append(loc_node_to_index(path_route[neighbour_vehi][i].getxy()))
+    path_package=temp(vehicle_nbr)
+    #print(neighbour_ind)
+    #print(path_package)
+    for key in path_package:
+      for val in path_package[key]:
+        for i in range(1,len(neighbour_ind)-1):
+          if(pack[val].getsupplylocindex()==i):
+            dec[val] = i
+    print(dec)
+
+    # print(neighbour_vehi)
+    
 
 def cost_fn_distance(vehicle_nbr, neighbour, path_route_index, neighbour_index):
     # print(type(path_route[vehicle_nbr][path_route_index].getxy()),type(neighbour[neighbour_index]))
@@ -224,7 +240,20 @@ def cost_fn_distance(vehicle_nbr, neighbour, path_route_index, neighbour_index):
             manhattan_distance(path_route[vehicle_nbr][path_route_index].getxy(), neighbour[neighbour_index][i]))
     # print(cost)
     return cost
-
+def temp(vehicle_nbr):
+  route_index = []
+  destination_package = {}
+  tem = []
+  for i in range(len(path_route[vehicle_nbr])):
+      tem.append(loc_node_to_index(path_route[vehicle_nbr][i].getxy()))
+  for i in range(1,len(tem)-1):
+        des = []
+        for j in range(60):
+          if(pack[j].getdemandlocindex()==tem[i]):
+           des.append(j)
+        destination_package[tem[i]] = des
+  return destination_package
+  
 
 def nearest(point, Otherpoints):
     ansr = []
@@ -246,6 +275,8 @@ def manhattan_distance(position_1, position_2):
     """Computes the Manhattan distance between two points"""
     return (abs(position_1[0] - position_2[0]) +
             abs(position_1[1] - position_2[1]))
+
+
 
 
 class CreateDistanceEvaluator(object):
@@ -475,8 +506,6 @@ class ConsolePrinter():
 ########
 # Main #
 ########
-
-
 def main():
     """Entry point of the program"""
     # Instantiate the data problem.
@@ -538,7 +567,8 @@ def main():
             k += 1
         # print(vehicle_nbr)
         cost.append(l)
-    print(cost)
+    print(cost) 
+    
 
     # for i in range(data.num_vehicles):
     #     swap_decider(i)
