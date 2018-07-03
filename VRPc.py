@@ -219,13 +219,14 @@ def swap_decider(vehicle_nbr, neighbour , neighbour_index):
     for i in range(len(path_route[neighbour_vehi])):
       neighbour_ind.append(loc_node_to_index(path_route[neighbour_vehi][i].getxy()))
     path_package=temp(vehicle_nbr)
-    #print(neighbour_ind)
-    #print(path_package)
+    print(neighbour_ind)
+    print(path_package)
     for key in path_package:
       for val in path_package[key]:
         for i in range(1,len(neighbour_ind)-1):
-          if(pack[val].getsupplylocindex()==i):
-            dec[val] = i
+          if(pack[val].getsupplylocindex()==neighbour_ind[i]):
+            dec[val] = neighbour_ind[i]
+            #print(val, vars(pack[val]))
     print(dec)
 
     # print(neighbour_vehi)
@@ -251,6 +252,7 @@ def temp(vehicle_nbr):
         for j in range(60):
           if(pack[j].getdemandlocindex()==tem[i]):
            des.append(j)
+           #print(j,vars(pack[j]))
         destination_package[tem[i]] = des
   return destination_package
   
@@ -497,7 +499,7 @@ class ConsolePrinter():
             # print(swap.getx(), swap.gety(), swap.gettime())
             plan_output += ' {0} Unloading({1}) Time({2},{3})\n'.format(node_index, route_load, time_min, time_max)
             plan_output += 'Distance of the route: {0} m\n'.format(route_dist)
-            plan_output += 'Load of the route: {0}\n'.format(total_load)
+            plan_output +=   'Load of the route: {0}\n'.format(total_load)
             plan_output += 'Time of the route: {0} min\n'.format(route_time)
             print(plan_output)
         print('Total Distance of all routes: {0} m'.format(total_dist))
