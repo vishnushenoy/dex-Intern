@@ -12,7 +12,7 @@ import kdtree
 path_route = []
 cost = []
 pack = []
-
+route_dists = []
 
 class Vehicle:
     """Stores the property of a vehicle"""
@@ -198,11 +198,10 @@ def find_path(node):
                 return vehicle_nbr
 
 
-def swap_decider(vehicle_nbr, neighbour , neighbour_index):
+def swap_decider(vehicle_nbr, neighbour , neighbour_index, c):
     # l = []
     dec = {}
     neighbour_ind = []
-    data = DataProblem()
     global cost
     #######################TODO########################################################
     # for i in range(len(path_route[vehicle_nbr])):
@@ -214,13 +213,17 @@ def swap_decider(vehicle_nbr, neighbour , neighbour_index):
     #         print(path_route[vehicle_id])
     for i in range(len(neighbour[neighbour_index])):
         neighbour_vehi=find_path(neighbour[neighbour_index][i])
+        # print(c)
+        for j in c:
+            print("Case 1 : %d & %d , Distance : %d" %(vehicle_nbr, neighbour_vehi, route_dists[vehicle_nbr] + (2*j)))
     # print(neighbour[neighbour_index][0])
     # node=(456,320)
+    #print(vehicle_nbr, neighbour_vehi)
     for i in range(len(path_route[neighbour_vehi])):
       neighbour_ind.append(loc_node_to_index(path_route[neighbour_vehi][i].getxy()))
     path_package=temp(vehicle_nbr)
-    print(neighbour_ind)
-    print(path_package)
+    # print(neighbour_ind)
+    # print(path_package)
     for key in path_package:
       for val in path_package[key]:
         for i in range(1,len(neighbour_ind)-1):
@@ -237,8 +240,7 @@ def cost_fn_distance(vehicle_nbr, neighbour, path_route_index, neighbour_index):
     # print(len(neighbour[neighbour_index]))
     cost = []
     for i in range(len(neighbour[neighbour_index])):
-        cost.append(
-            manhattan_distance(path_route[vehicle_nbr][path_route_index].getxy(), neighbour[neighbour_index][i]))
+        cost.append(manhattan_distance(path_route[vehicle_nbr][path_route_index].getxy(), neighbour[neighbour_index][i]))
     # print(cost)
     return cost
 def temp(vehicle_nbr):
@@ -492,6 +494,7 @@ class ConsolePrinter():
             time_min = self.assignment.Min(time_var)
             time_max = self.assignment.Max(time_var)
             total_dist += route_dist
+            route_dists.append(route_dist)
             total_time += route_time
             swap = swapp(self.data.locations[node_index][0], self.data.locations[node_index][1], time_min)
             path_route[vehicle_id].append(swap)
@@ -565,12 +568,12 @@ def main():
         for i in range(1, len(path_route[vehicle_nbr]) - 1):
             if (sameTime[k] != None):
                 l.append(cost_fn_distance(vehicle_nbr, sameTime, i, k))
-                swap_decider(vehicle_nbr, sameTime,k)
+                swap_decider(vehicle_nbr, sameTime,k, cost_fn_distance(vehicle_nbr, sameTime, i, k))
             k += 1
         # print(vehicle_nbr)
         cost.append(l)
     print(cost) 
-    
+    print(route_dists)
 
     # for i in range(data.num_vehicles):
     #     swap_decider(i)
