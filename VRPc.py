@@ -13,7 +13,7 @@ path_route = []
 cost = []
 pack = []
 route_dists = []
-
+output=[]
 class Vehicle:
     """Stores the property of a vehicle"""
     def __init__(self):
@@ -208,13 +208,12 @@ def find_path(node):
 
 
 def swap_decider(vehicle_nbr, neighbour , neighbour_index, c, locs):
-    # l = []
     dec = {}
     neighbour_ind = []
     global cost
+    out = []
     c_swap, c_noswap = 0, 0
     res1, res2 = [], []
-    #######################TODO########################################################
     # for i in range(len(path_route[vehicle_nbr])):
     #     # print(data.locations.index((path_route[vehicle_nbr][i].getxy()[0], path_route[vehicle_nbr][i].getxy()[1])))
     #     # print(path_route[vehicle_nbr][i].getxy(),neighbour[neighbour_index])
@@ -227,7 +226,7 @@ def swap_decider(vehicle_nbr, neighbour , neighbour_index, c, locs):
         # print("n",loc_node_to_index(neighbour[neighbour_index][i]))
         # print(c)
         for j in c:
-            print("Case 1 : %d & %d , Distance : %d" %(vehicle_nbr, neighbour_vehi, route_dists[vehicle_nbr] + (2*j)))
+            # print("Case 1 : %d & %d , Distance : %d" %(vehicle_nbr, neighbour_vehi, route_dists[vehicle_nbr] + (2*j)))
             c_swap = route_dists[vehicle_nbr] + (2*j)
             # print(locs[neighbour_index])
             # print(loc_node_to_index(locs[neighbour_index]))
@@ -241,7 +240,7 @@ def swap_decider(vehicle_nbr, neighbour , neighbour_index, c, locs):
             res1.append(loc_node_to_index(neighbour[neighbour_index][i]))
             for k in range(s_index, len(path_route[vehicle_nbr])):
                 res1.append(loc_node_to_index(path_route[vehicle_nbr][k].getxy()))
-            
+
     # print(neighbour[neighbour_index][0])
     # node=(456,320)
     #print(vehicle_nbr, neighbour_vehi)
@@ -256,24 +255,22 @@ def swap_decider(vehicle_nbr, neighbour , neighbour_index, c, locs):
           if(pack[val].getsupplylocindex()==neighbour_ind[i]):
             res2 = []
             dec[val] = neighbour_ind[i]
-            print(val, vars(pack[val]))
+            print("\nCommon Package Id:{0} \n Source:{1} Destination:{2}".format(pack[val].getpackageid(), pack[val].getdemandlocindex(), pack[val].getsupplylocindex()))
             # print(pack[val].getsupplylocindex())
             # print(path_route[vehicle_nbr][-2].getxy())
             # print(index_to_loc_node(pack[val].getsupplylocindex()))
-            print("Case 2 : %d , Distance : %d" %(vehicle_nbr,route_dists[vehicle_nbr] + manhattan_distance(path_route[vehicle_nbr][-2].getxy(),index_to_loc_node(pack[val].getsupplylocindex()))))
+            # print("Case 2 : %d , Distance : %d" %(vehicle_nbr,route_dists[vehicle_nbr] + manhattan_distance(path_route[vehicle_nbr][-2].getxy(),index_to_loc_node(pack[val].getsupplylocindex()))))
             c_noswap = route_dists[vehicle_nbr] + manhattan_distance(path_route[vehicle_nbr][-2].getxy(),index_to_loc_node(pack[val].getsupplylocindex()))
             for k in range(len(path_route[vehicle_nbr])-1):
                 res2.append(loc_node_to_index(path_route[vehicle_nbr][k].getxy()))
             res2.append(pack[val].getsupplylocindex())
             res2.append(loc_node_to_index(path_route[vehicle_nbr][-1].getxy()))
             if(comp(c_swap, c_noswap)):
-                print(res1)
+                out = res1
             else:
-                print(res2)
-    print(dec)
+                out = res2
+    return out
 
-    # print(neighbour_vehi)
-    
 
 def cost_fn_distance(vehicle_nbr, neighbour, path_route_index, neighbour_index):
     # print(type(path_route[vehicle_nbr][path_route_index].getxy()),type(neighbour[neighbour_index]))
@@ -283,8 +280,9 @@ def cost_fn_distance(vehicle_nbr, neighbour, path_route_index, neighbour_index):
         cost.append(manhattan_distance(path_route[vehicle_nbr][path_route_index].getxy(), neighbour[neighbour_index][i]))
     # print(cost)
     return cost
+
+
 def temp(vehicle_nbr):
-  route_index = []
   destination_package = {}
   tem = []
   for i in range(len(path_route[vehicle_nbr])):
@@ -297,7 +295,7 @@ def temp(vehicle_nbr):
            #print(j,vars(pack[j]))
         destination_package[tem[i]] = des
   return destination_package
-  
+
 
 def nearest(point, Otherpoints):
     ansr = []
@@ -604,18 +602,42 @@ def main():
             sameTime.append(nearest(loc, Otherpoints))
             # print(loc, sameTime)
     k = 0
+    global output
+    output = [list()] * data.num_vehicles
+    temp_output=[]
     global cost
+    vehicle_swap=0
     for vehicle_nbr in range(data.num_vehicles):
         l = []
         for i in range(1, len(path_route[vehicle_nbr]) - 1):
             if (sameTime[k] != None):
                 l.append(cost_fn_distance(vehicle_nbr, sameTime, i, k))
-                swap_decider(vehicle_nbr, sameTime,k, cost_fn_distance(vehicle_nbr, sameTime, i, k), locs)
+                temp_output=swap_decider(vehicle_nbr, sameTime,k, cost_fn_distance(vehicle_nbr, sameTime, i, k), locs)
+                if temp_output!=[]:
+                    vehicle_swap = vehicle_nbr
+                    output[vehicle_nbr]=temp_output
             k += 1
         # print(vehicle_nbr)
         cost.append(l)
-    print(cost) 
-    print(route_dists)
+    # print(cost)
+    # print(route_dists)
+
+    print("\nAfter Optimization:\n")
+    if temp_output!=None:
+        for i in range(data.num_vehicles):
+            if i == vehicle_swap:
+                # print(vehicle_swap)
+                continue
+            else:
+                output[i] = []
+                for j in range(len(path_route[i])):
+                    # print(Vehiclei,loc_node_to_index(path_route[i][j].getxy()))
+                    output[i].append(loc_node_to_index(path_route[i][j].getxy()))
+            # for i in range(4):
+    for i in range(data.num_vehicles):
+        print("Vehicle {0}: {1}\n".format(i, output[i]))
+
+        # print(neighbour_vehi)
 
     # for i in range(data.num_vehicles):
     #     swap_decider(i)
